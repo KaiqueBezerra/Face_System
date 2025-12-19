@@ -1,33 +1,18 @@
 import { Link } from '@tanstack/react-router'
-import { Camera, ShieldCheck, Sparkles, Lock } from 'lucide-react'
+import { Lock, ShieldCheck, Sparkles } from 'lucide-react'
+import Header from '../ui/Header'
+import Footer from '../ui/Footer'
 
 export default function Index() {
   return (
     <div className="min-h-screen bg-linear-to-b from-gray-900 via-gray-900 to-black text-white">
-      <header className="px-6 py-4 border-b border-white/10 backdrop-blur">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-emerald-500/20 border border-emerald-400/40 grid place-items-center">
-              <Camera className="h-5 w-5 text-emerald-400" />
-            </div>
-            <span className="font-semibold tracking-wide">Face System</span>
-          </div>
-          <nav className="flex items-center gap-3">
-            <Link
-              to="/login"
-              className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
-            >
-              Entrar
-            </Link>
-            <Link
-              to="/register"
-              className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 transition-colors"
-            >
-              Criar conta
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <Header
+        color="emerald"
+        actions={[
+          { to: '/login', label: 'Entrar', variant: 'secondary' },
+          { to: '/register', label: 'Criar conta', variant: 'primary' },
+        ]}
+      />
 
       <main className="px-6">
         <section className="max-w-6xl mx-auto py-20 grid lg:grid-cols-2 gap-10">
@@ -96,7 +81,7 @@ export default function Index() {
                 </div>
               </div>
 
-              <div className="mt-6 rounded-xl border border-white/10 bg-gradient-to-r from-emerald-900/20 to-blue-900/20 p-4">
+              <div className="mt-6 rounded-xl border border-white/10 bg-linear-to-r from-emerald-900/20 to-blue-900/20 p-4">
                 <div className="text-sm text-gray-400">Destaques</div>
                 <ul className="mt-2 space-y-1 text-sm text-gray-300">
                   <li>• Processamento local no navegador</li>
@@ -109,19 +94,7 @@ export default function Index() {
         </section>
       </main>
 
-      <footer className="px-6 py-6 border-t border-white/10 text-sm text-gray-400">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div>© {new Date().getFullYear()} Face System</div>
-          <div className="flex gap-4">
-            <Link to="/login" className="hover:text-white">
-              Entrar
-            </Link>
-            <Link to="/register" className="hover:text-white">
-              Criar conta
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
