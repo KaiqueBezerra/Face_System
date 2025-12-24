@@ -10,12 +10,10 @@ type FooterProps = {
 }
 
 export default function Footer({ links }: FooterProps) {
-  const items =
-    links ??
-    [
-      { to: '/login', label: 'Entrar' },
-      { to: '/register', label: 'Criar conta' },
-    ]
+  const items = links ?? [
+    { to: '/login', label: 'Entrar' },
+    { to: '/register', label: 'Criar conta' },
+  ]
 
   return (
     <footer className="px-6 py-6 border-t border-white/10 text-sm text-gray-400">

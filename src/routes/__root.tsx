@@ -7,10 +7,13 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
+import Header from '../components/header/Header'
+import Footer from '../components/footer/Footer'
 
 import appCss from '../styles.css?url'
 
 import type { QueryClient } from '@tanstack/react-query'
+import NotFound from '../components/notfound/NotFound'
 
 interface MyRouterContext {
   queryClient: QueryClient
@@ -38,6 +41,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     ],
   }),
 
+  notFoundComponent: NotFound,
   shellComponent: RootDocument,
 })
 
@@ -47,8 +51,18 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body>
-        {children}
+      <body className="min-h-screen bg-linear-to-b from-gray-900 via-gray-900 to-black text-white">
+        <div className="min-h-screen flex flex-col">
+          <Header
+            color="blue"
+            actions={[
+              { to: '/login', label: 'Entrar', variant: 'secondary' },
+              { to: '/register', label: 'Criar conta', variant: 'primary' },
+            ]}
+          />
+          <main className="flex-1 px-6 flex items-center">{children}</main>
+          <Footer />
+        </div>
         <TanStackDevtools
           config={{
             position: 'bottom-right',

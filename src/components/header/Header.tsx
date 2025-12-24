@@ -15,7 +15,7 @@ type HeaderProps = {
 
 export default function Header({ color = 'blue', actions = [] }: HeaderProps) {
   const iconBoxClass = clsx(
-    'h-9 w-9 rounded-lg grid place-items-center border',
+    'h-9 w-9 rounded-lg grid place-items-center border hover:border-white/40 transition-colors cursor-pointer',
     color === 'emerald'
       ? 'bg-emerald-500/20 border-emerald-400/40'
       : 'bg-blue-500/20 border-blue-400/40',
@@ -37,10 +37,15 @@ export default function Header({ color = 'blue', actions = [] }: HeaderProps) {
     <header className="px-6 py-4 border-b border-white/10 backdrop-blur">
       <div className="max-w-6xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className={iconBoxClass}>
+          <Link to="/" className={iconBoxClass}>
             <Camera className={iconClass} />
-          </div>
-          <span className="font-semibold tracking-wide">Face System</span>
+          </Link>
+          <Link
+            to="/"
+            className="font-semibold tracking-wide hover:text-white/80 transition-colors"
+          >
+            Face System
+          </Link>
         </div>
         <nav className="flex items-center gap-3">
           {actions.map((a, i) => (
