@@ -3,17 +3,18 @@ import { useEffect, useRef, useState } from 'react'
 import Webcam from 'react-webcam'
 import * as faceapi from 'face-api.js'
 import { useFaceModels } from '../../hooks/useFaceModels'
+import { useAuth } from '@/context/auth/useAuth'
 
 export function Login() {
   const navigate = useNavigate()
   const webcamRef = useRef<Webcam>(null)
   const { isModelLoaded, modelStatus } = useFaceModels()
+  const { login } = useAuth()
 
   const [nameInput, setNameInput] = useState('')
   const [passwordInput, setPasswordInput] = useState('')
   const [detectedFace, setDetectedFace] =
     useState<faceapi.FaceDetection | null>(null)
-  const [identifiedUser, setIdentifiedUser] = useState<string | null>(null)
 
   // Check for face periodically
   const handleCheckFace = async () => {
@@ -32,39 +33,9 @@ export function Login() {
 
     if (detection) {
       setDetectedFace(detection.detection)
-
-      // Try to identify user
-      const existingUsersStr = localStorage.getItem('users')
-      if (existingUsersStr) {
-        const users = JSON.parse(existingUsersStr)
-        let bestMatch = null
-        let minDistance = 0.6
-
-        for (const user of users) {
-          const distance = faceapi.euclideanDistance(
-            detection.descriptor,
-            new Float32Array(user.descriptor),
-          )
-          if (distance < minDistance) {
-            minDistance = distance
-            bestMatch = user
-          }
-        }
-
-        if (bestMatch) {
-          setIdentifiedUser(bestMatch.name)
-          if (!nameInput) {
-            setNameInput(bestMatch.name)
-          }
-        } else {
-          setIdentifiedUser(null)
-        }
-      }
-
       return detection
     } else {
       setDetectedFace(null)
-      setIdentifiedUser(null)
       return null
     }
   }
@@ -83,52 +54,56 @@ export function Login() {
       return
     }
 
-    // 1. Verify credentials
-    const existingUsersStr = localStorage.getItem('users')
-    const users = existingUsersStr ? JSON.parse(existingUsersStr) : []
-    const user = users.find(
-      (u: any) => u.name === nameInput && u.password === passwordInput,
-    )
+    // 1. Get Face Descriptor (if available)
+    let descriptor: number[] | undefined
 
-    if (!user) {
-      alert('Invalid username or password')
-      return
-    }
-
-    // 2. Verify Face
-    // Try to get a current detection if state is missing
-    let detection = null
-
-    // First try the one from state if available (for speed)
-    // But we need the descriptor which isn't in detectedFace state (that's just the box)
-    // So we should just run a fresh detection to be safe and secure
     if (webcamRef.current?.video && webcamRef.current.video.readyState === 4) {
-      detection = await faceapi
+      const detection = await faceapi
         .detectSingleFace(
           webcamRef.current.video,
           new faceapi.TinyFaceDetectorOptions(),
         )
         .withFaceLandmarks()
         .withFaceDescriptor()
+
+      if (detection) {
+        descriptor = Array.from(detection.descriptor)
+      }
     }
 
-    if (!detection) {
-      alert('Face not detected. Please look at the camera.')
-      return
-    }
+    // if (!descriptor) {
+    //   const proceed = confirm(
+    //     'Face not detected clearly. Try to login with password only?',
+    //   )
+    //   if (!proceed) return
+    // }
 
-    // 3. Match Face
-    const distance = faceapi.euclideanDistance(
-      detection.descriptor,
-      new Float32Array(user.descriptor),
-    )
+    try {
+      const response = await fetch('http://localhost:3333/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: nameInput,
+          password: passwordInput,
+          descriptor: descriptor,
+        }),
+      })
 
-    if (distance < 0.6) {
-      localStorage.setItem('isAuthenticated', 'true')
-      localStorage.setItem('userName', user.name)
-      navigate({ to: '/dashboard' })
-    } else {
-      alert('Face does not match the user record. Access denied.')
+      if (response.ok) {
+        const data = await response.json()
+        // console.log('Login response:', data)
+        login(data.token, data.user)
+        navigate({ to: '/dashboard' })
+      } else {
+        const errorData = await response.json()
+        console.error('Error response:', errorData)
+        alert(`Login failed: ${errorData.error || 'Invalid credentials'}`)
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      alert('Failed to connect to server')
     }
   }
 
@@ -156,11 +131,6 @@ export function Login() {
           />
           {detectedFace && (
             <div className="absolute top-2 right-2 bg-blue-500 w-4 h-4 rounded-full animate-pulse shadow-[0_0_10px_#3b82f6]"></div>
-          )}
-          {identifiedUser && (
-            <div className="absolute bottom-2 left-2 right-2 bg-black/70 text-blue-400 text-xs px-2 py-1 rounded text-center">
-              Identified: {identifiedUser}
-            </div>
           )}
         </div>
 

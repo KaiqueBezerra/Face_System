@@ -65,22 +65,33 @@ export function Register() {
     const detection = await handleCheckFace()
     if (detection) {
       const newUser = {
-        name: nameInput,
+        username: nameInput,
         password: passwordInput,
         descriptor: Array.from(detection.descriptor),
       }
 
-      // Get existing users
-      const existingUsersStr = localStorage.getItem('users')
-      const existingUsers = existingUsersStr ? JSON.parse(existingUsersStr) : []
+      try {
+        const response = await fetch('http://localhost:3333/api/users', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newUser),
+        })
 
-      // Add new user
-      existingUsers.push(newUser)
-      localStorage.setItem('users', JSON.stringify(existingUsers))
-
-      setStatus('Registration successful!')
-      alert('User registered successfully!')
-      navigate({ to: '/login' })
+        if (response.ok) {
+          setStatus('Registration successful!')
+          alert('User registered successfully!')
+          navigate({ to: '/login' })
+        } else {
+          const errorData = await response.json()
+          console.error('Error response:', errorData)
+          alert(`Registration failed: ${errorData.error || 'Unknown error'}`)
+        }
+      } catch (error) {
+        console.error('Registration error:', error)
+        alert('Failed to connect to server')
+      }
     } else {
       alert(
         'No face detected. Please position yourself in front of the camera.',

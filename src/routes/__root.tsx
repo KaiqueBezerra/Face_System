@@ -45,6 +45,8 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   shellComponent: RootDocument,
 })
 
+import { AuthProvider } from '../context/auth/AuthContext'
+
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -52,30 +54,32 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="min-h-screen bg-linear-to-b from-gray-900 via-gray-900 to-black text-white">
-        <div className="min-h-screen flex flex-col">
-          <Header
-            color="blue"
-            actions={[
-              { to: '/login', label: 'Entrar', variant: 'secondary' },
-              { to: '/register', label: 'Criar conta', variant: 'primary' },
+        <AuthProvider>
+          <div className="min-h-screen flex flex-col">
+            <Header
+              color="blue"
+              actions={[
+                { to: '/login', label: 'Entrar', variant: 'secondary' },
+                { to: '/register', label: 'Criar conta', variant: 'primary' },
+              ]}
+            />
+            <main className="flex-1 px-6 flex items-center">{children}</main>
+            <Footer />
+          </div>
+          <TanStackDevtools
+            config={{
+              position: 'bottom-right',
+            }}
+            plugins={[
+              {
+                name: 'Tanstack Router',
+                render: <TanStackRouterDevtoolsPanel />,
+              },
+              TanStackQueryDevtools,
             ]}
           />
-          <main className="flex-1 px-6 flex items-center">{children}</main>
-          <Footer />
-        </div>
-        <TanStackDevtools
-          config={{
-            position: 'bottom-right',
-          }}
-          plugins={[
-            {
-              name: 'Tanstack Router',
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-            TanStackQueryDevtools,
-          ]}
-        />
-        <Scripts />
+          <Scripts />
+        </AuthProvider>
       </body>
     </html>
   )
